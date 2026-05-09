@@ -106,7 +106,7 @@ class MenuItem {
     description: (json['description'] ?? '').toString(),
     priceCents: moneyToCents((json['price'] as num?) ?? 0),
     categoryId: (json['category_id'] as num? ?? 0).toInt(),
-    imageUrl: json['image_url'] == null ? null : json['image_url'].toString(),
+    imageUrl: json['image_url']?.toString(),
     customizationGroups: (json['customization_groups'] as List? ?? const [])
         .whereType<Map>()
         .map((m) => CustomizationGroup.fromJson(m.cast<String, dynamic>()))

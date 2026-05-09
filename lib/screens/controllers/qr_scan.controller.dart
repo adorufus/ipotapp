@@ -104,4 +104,12 @@ class QrScanController extends AutoDisposeNotifier<QrScanState> {
       _isResuming = false;
     }
   }
+
+  Future<void> toggleFlash() async {
+    try {
+      await _controller?.toggleFlash();
+    } catch (e) {
+      state = state.copyWith(isError: true, errorMessage: e.toString());
+    }
+  }
 }
