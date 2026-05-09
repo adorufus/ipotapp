@@ -19,6 +19,9 @@ class AppButton extends StatelessWidget {
     this.leading,
     this.fullWidth = true,
     this.padding,
+    this.height,
+    this.shape,
+    this.textStyle,
   });
 
   final String label;
@@ -28,6 +31,9 @@ class AppButton extends StatelessWidget {
   final Widget? leading;
   final bool fullWidth;
   final EdgeInsetsGeometry? padding;
+  final double? height;
+  final OutlinedBorder? shape;
+  final TextStyle? textStyle;
 
   bool get _enabled => onPressed != null && !isLoading;
 
@@ -43,10 +49,12 @@ class AppButton extends StatelessWidget {
       side: BorderSide(color: colors.border, width: 1),
       padding:
           padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+      shape:
+          shape ?? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      textStyle: textStyle ??
+          Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
     );
 
     final child = Row(
@@ -82,6 +90,7 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       width: fullWidth ? double.infinity : null,
+      height: height,
       child: OutlinedButton(
         style: style,
         onPressed: _enabled ? onPressed : null,

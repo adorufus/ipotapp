@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/qr_scan.screen.dart';
+import 'screens/app_shell.screen.dart';
 import 'state/app_scope.dart';
 
 void main() {
@@ -12,6 +12,9 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: QrScanScreen());
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AppShellScreen(),
+    );
   }
 }
