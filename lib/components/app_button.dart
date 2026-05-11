@@ -17,6 +17,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.primary,
     this.isLoading = false,
     this.leading,
+    this.trailing,
     this.fullWidth = true,
     this.padding,
     this.height,
@@ -29,6 +30,7 @@ class AppButton extends StatelessWidget {
   final AppButtonVariant variant;
   final bool isLoading;
   final Widget? leading;
+  final Widget? trailing;
   final bool fullWidth;
   final EdgeInsetsGeometry? padding;
   final double? height;
@@ -59,7 +61,8 @@ class AppButton extends StatelessWidget {
 
     final child = Row(
       mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment:
+          trailing != null ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
       children: [
         if (isLoading) ...[
           SizedBox(
@@ -78,13 +81,24 @@ class AppButton extends StatelessWidget {
           ),
           const SizedBox(width: 10),
         ],
-        Flexible(
+        Expanded(
           child: Text(
             label,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
+            textAlign: trailing != null ? TextAlign.left : TextAlign.center,
           ),
         ),
+        if (trailing != null) ...[
+          const SizedBox(width: 10),
+          DefaultTextStyle.merge(
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colors.foreground,
+                ),
+            child: trailing!,
+          ),
+        ],
       ],
     );
 

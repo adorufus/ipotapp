@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
-import '../screens/providers/qr_scan.provider.dart';
+import '../screens/menu/providers/qr_scan.provider.dart';
 
 /// Shared glass app bar (used by [AppShellScreen] and [AppScaffold]).
 class GlobalGlassAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -199,7 +199,6 @@ class AppScaffold extends ConsumerWidget {
         actions: resolvedActions,
       ),
       body: SafeArea(top: !extendBodyBehindAppBar, bottom: false, child: body),
-      floatingActionButton: floatingActionButton,
       bottomNavigationBar: showBottomNavigationBar
           ? const AppBottomNavigationBar()
           : null,
@@ -253,11 +252,11 @@ class _NavItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: fg,
-                          fontWeight: FontWeight.w600,
-                          height: 1.15,
-                          fontSize: 12,
-                        ),
+                      color: fg,
+                      fontWeight: FontWeight.w600,
+                      height: 1.15,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),

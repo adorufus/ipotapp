@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/components/app_scaffold.dart';
-import 'package:ipotapp/screens/cart.screen.dart';
-import 'package:ipotapp/screens/orders.screen.dart';
-import 'package:ipotapp/screens/qr_scan.screen.dart';
+import 'package:ipotapp/screens/cart/cart.screen.dart';
+import 'package:ipotapp/screens/menu/menu.screen.dart';
+import 'package:ipotapp/screens/orders/orders.screen.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
-import 'providers/qr_scan.provider.dart';
+import 'menu/providers/qr_scan.provider.dart';
 
 /// Root shell: one [Scaffold], [IndexedStack] for tabs — no route transition on tab change.
 class AppShellScreen extends ConsumerWidget {
@@ -23,16 +23,16 @@ class AppShellScreen extends ConsumerWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: idx == 0,
-      backgroundColor: idx == 0 ? Colors.transparent : AppColors.secondary,
+      backgroundColor: AppColors.secondary,
       appBar: GlobalGlassAppBar(
         title: title,
         actions: [
           IconButton(
             tooltip: 'Info',
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Info coming soon')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Info coming soon')));
             },
             icon: const Icon(Icons.info_outline, color: AppColors.neutral),
           ),
@@ -44,23 +44,9 @@ class AppShellScreen extends ConsumerWidget {
         child: IndexedStack(
           index: idx,
           sizing: StackFit.expand,
-          children: const [
-            QrScanTab(),
-            CartTab(),
-            OrdersTab(),
-          ],
+          children: const [MenuOrQrTab(), CartTab(), OrdersTab()],
         ),
       ),
-      floatingActionButton: idx == 0
-          ? FloatingActionButton(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.secondary,
-              onPressed: () {
-                ref.read(qrScanControllerProvider.notifier).pause();
-              },
-              child: const Icon(Icons.list_alt),
-            )
-          : null,
       bottomNavigationBar: const AppBottomNavigationBar(),
     );
   }

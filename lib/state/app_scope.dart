@@ -11,20 +11,14 @@ class AppScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Composition root: override DI config here (env/config, auth, etc.).
-    //
-    // Mock API defaults:
-    // - Desktop/Web: http://localhost:4000/api/v1
-    // - Android emulator: http://10.0.2.2:4000/api/v1
-    //
-    // You can also set it at runtime:
-    // `--dart-define=API_BASE_URL=http://localhost:4000/api/v1`
+    final hostIpOverride =
+        const String.fromEnvironment('HOST_IP', defaultValue: '').trim();
+    final host = hostIpOverride.isNotEmpty ? hostIpOverride : '10.0.2.2';
+    final defaultBaseUrl = 'http://$host:4000/api/v1';
+
     final resolvedBaseUrl =
         apiBaseUrl ??
-        const String.fromEnvironment(
-          'API_BASE_URL',
-          defaultValue: 'http://localhost:4000/api/v1',
-        );
+        String.fromEnvironment('API_BASE_URL', defaultValue: defaultBaseUrl);
 
     return ProviderScope(
       overrides: [

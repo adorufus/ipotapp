@@ -342,5 +342,5 @@ app.delete("/api/v1/orders/:orderId", (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Mock API running on http://localhost:${PORT}`);
+  console.log(`Mock API running on http://10.0.0.1:${PORT}`);
 });
