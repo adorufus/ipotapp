@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/components/app_scaffold.dart';
+import 'package:ipotapp/components/network_status_banner.dart';
 import 'package:ipotapp/screens/cart/cart.screen.dart';
 import 'package:ipotapp/screens/menu/menu.screen.dart';
 import 'package:ipotapp/screens/orders/orders.screen.dart';
@@ -15,6 +16,16 @@ class AppShellScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(deviceNetworkStatusProvider, (previous, next) {
+      next.whenData((status) {
+        if (status != DeviceNetworkStatus.offline) {
+          Future.microtask(
+            () => ref.read(orderOutboundSyncProvider).flushIfOnline(),
+          );
+        }
+      });
+    });
+
     final idx = ref.watch(bottomNavIndexProvider);
     final qrState = ref.watch(qrScanControllerProvider);
     final title = qrState.qrCode != null
@@ -41,10 +52,18 @@ class AppShellScreen extends ConsumerWidget {
       body: SafeArea(
         top: idx != 0,
         bottom: false,
-        child: IndexedStack(
-          index: idx,
-          sizing: StackFit.expand,
-          children: const [MenuOrQrTab(), CartTab(), OrdersTab()],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const NetworkStatusBanner(),
+            Expanded(
+              child: IndexedStack(
+                index: idx,
+                sizing: StackFit.expand,
+                children: const [MenuOrQrTab(), CartTab(), OrdersTab()],
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(),

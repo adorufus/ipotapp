@@ -54,6 +54,15 @@ class OrderRequest {
     'items': items.map((i) => i.toJson()).toList(),
     'customer_note': customerNote,
   };
+
+  factory OrderRequest.fromJson(Map<String, dynamic> json) => OrderRequest(
+    tableId: (json['table_id'] ?? '').toString(),
+    items: (json['items'] as List? ?? const [])
+        .whereType<Map>()
+        .map((m) => OrderRequestItem.fromJson(m.cast<String, dynamic>()))
+        .toList(),
+    customerNote: (json['customer_note'] ?? '').toString(),
+  );
 }
 
 class OrderRequestItem {
@@ -72,6 +81,20 @@ class OrderRequestItem {
     'quantity': quantity,
     'customizations': customizations.map((c) => c.toJson()).toList(),
   };
+
+  factory OrderRequestItem.fromJson(Map<String, dynamic> json) =>
+      OrderRequestItem(
+        menuItemId: (json['menu_item_id'] as num).toInt(),
+        quantity: (json['quantity'] as num? ?? 1).toInt(),
+        customizations: (json['customizations'] as List? ?? const [])
+            .whereType<Map>()
+            .map(
+              (m) => OrderRequestCustomization.fromJson(
+                m.cast<String, dynamic>(),
+              ),
+            )
+            .toList(),
+      );
 }
 
 class OrderRequestCustomization {
@@ -87,6 +110,12 @@ class OrderRequestCustomization {
     'option_id': optionId,
     'quantity': quantity,
   };
+
+  factory OrderRequestCustomization.fromJson(Map<String, dynamic> json) =>
+      OrderRequestCustomization(
+        optionId: (json['option_id'] as num).toInt(),
+        quantity: (json['quantity'] as num? ?? 1).toInt(),
+      );
 }
 
 class OrderResponse {

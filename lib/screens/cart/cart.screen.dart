@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ipotapp/components/app_button.dart';
+import 'package:ipotapp/models/api_error.model.dart';
 import 'package:ipotapp/models/cart.model.dart';
 import 'package:ipotapp/models/menu_response.model.dart';
+import 'package:ipotapp/models/order.model.dart';
 import 'package:ipotapp/screens/menu/providers/menu.provider.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
@@ -13,6 +16,7 @@ class CartTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartControllerProvider);
+    final checkout = ref.watch(checkoutControllerProvider);
     final asyncMenu = ref.watch(menuResponseProvider);
 
     final itemsById = asyncMenu.maybeWhen(
@@ -56,7 +60,7 @@ class CartTab extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             itemCount: lines.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (context, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final line = lines[index];
               final item = itemsById[line.menuItemId] as MenuItem?;
@@ -113,7 +117,9 @@ class CartTab extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF55423D).withValues(alpha: 0.85),
+                                color: const Color(
+                                  0xFF55423D,
+                                ).withValues(alpha: 0.85),
                               ),
                             ),
                           ],
@@ -156,27 +162,40 @@ class CartTab extends ConsumerWidget {
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                TextButton(
-                  onPressed: () =>
-                      ref.read(cartControllerProvider.notifier).clear(),
-                  child: const Text('Clear cart'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () =>
+                          ref.read(cartControllerProvider.notifier).clear(),
+                      child: const Text('Clear cart'),
+                    ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final totalCents = ref.watch(cartTotalCentsProvider);
+                        final total = (totalCents / 100).toStringAsFixed(2);
+                        return Text(
+                          'Total: \$$total',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.neutral,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final totalCents = ref.watch(cartTotalCentsProvider);
-                    final total = (totalCents / 100).toStringAsFixed(2);
-                    return Text(
-                      'Total: \$$total',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.neutral,
-                      ),
-                    );
-                  },
+                const SizedBox(height: 16),
+                AppButton(
+                  height: 56,
+                  shape: const StadiumBorder(),
+                  label: checkout.submitting ? 'Placing order…' : 'Checkout',
+                  onPressed: checkout.submitting
+                      ? null
+                      : () => _submitOrder(context, ref),
                 ),
               ],
             ),
@@ -184,6 +203,69 @@ class CartTab extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+Future<void> _submitOrder(BuildContext context, WidgetRef ref) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final menu = ref.read(menuResponseProvider).valueOrNull;
+  final cart = ref.read(cartControllerProvider);
+
+  if (menu == null) {
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Connect to a table and wait for the menu to load.'),
+      ),
+    );
+    return;
+  }
+  if (cart.linesById.isEmpty) return;
+
+  final items = cart.linesById.values
+      .map(
+        (line) => OrderRequestItem(
+          menuItemId: line.menuItemId,
+          quantity: line.quantity,
+          customizations: line.selectedOptions
+              .map(
+                (o) => OrderRequestCustomization(
+                  optionId: o.optionId,
+                  quantity: o.quantity,
+                ),
+              )
+              .toList(),
+        ),
+      )
+      .toList();
+
+  final request = OrderRequest(
+    tableId: menu.restaurant.tableId,
+    items: items,
+    customerNote: cart.customerNote,
+  );
+
+  try {
+    final res = await ref
+        .read(checkoutControllerProvider.notifier)
+        .placeOrder(request: request, menuSnapshot: menu);
+    if (!context.mounted) return;
+    ref.read(cartControllerProvider.notifier).clear();
+    final isQueued = res.order.id.startsWith('local_');
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          isQueued
+              ? 'Order saved on this device (${res.order.id}). It will send when you are back online.'
+              : 'Order ${res.order.id} placed',
+        ),
+      ),
+    );
+  } on ApiError catch (e) {
+    if (!context.mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(e.message)));
+  } catch (e) {
+    if (!context.mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(e.toString())));
   }
 }
 
@@ -199,7 +281,9 @@ class _CustomizationSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final parts = <String>[];
-    for (final sel in [...selected]..sort((a, b) => a.optionId.compareTo(b.optionId))) {
+    for (final sel in [
+      ...selected,
+    ]..sort((a, b) => a.optionId.compareTo(b.optionId))) {
       final opt = optionById[sel.optionId];
       final name = opt?.name ?? 'Option #${sel.optionId}';
       parts.add(sel.quantity == 1 ? name : '$name x${sel.quantity}');

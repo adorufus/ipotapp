@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ipotapp/components/network_status_banner.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
@@ -198,7 +199,17 @@ class AppScaffold extends ConsumerWidget {
         leading: resolvedLeading,
         actions: resolvedActions,
       ),
-      body: SafeArea(top: !extendBodyBehindAppBar, bottom: false, child: body),
+      body: SafeArea(
+        top: !extendBodyBehindAppBar,
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const NetworkStatusBanner(),
+            Expanded(child: body),
+          ],
+        ),
+      ),
       bottomNavigationBar: showBottomNavigationBar
           ? const AppBottomNavigationBar()
           : null,

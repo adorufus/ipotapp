@@ -38,6 +38,11 @@ class _MenuTabState extends ConsumerState<MenuTab> {
   String _query = '';
   int? _selectedCategoryId;
 
+  Future<void> _refreshMenu() async {
+    final refreshed = ref.refresh(menuResponseProvider.future);
+    await refreshed;
+  }
+
   Future<void> _handleAddToCart(MenuItem item) async {
     if (item.customizationGroups.isEmpty) {
       ref.read(cartControllerProvider.notifier).addMenuItem(item);
@@ -109,44 +114,48 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                 return matchesCategory && matchesQuery;
               }).toList();
 
-              return SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, 80, 20, listBottomPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _SearchBar(controller: _searchController),
-                    const SizedBox(height: 20),
-                    _CategoryTabs(
-                      categories: categories,
-                      selectedId: selectedCategoryId,
-                      onSelected: (id) =>
-                          setState(() => _selectedCategoryId = id),
-                    ),
-                    const SizedBox(height: 20),
-                    ...items.map(
-                      (it) => Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: MenuItemCard(
-                          item: it,
-                          onAdd: () => _handleAddToCart(it),
+              return RefreshIndicator(
+                onRefresh: _refreshMenu,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(20, 80, 20, listBottomPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _SearchBar(controller: _searchController),
+                      const SizedBox(height: 20),
+                      _CategoryTabs(
+                        categories: categories,
+                        selectedId: selectedCategoryId,
+                        onSelected: (id) =>
+                            setState(() => _selectedCategoryId = id),
+                      ),
+                      const SizedBox(height: 20),
+                      ...items.map(
+                        (it) => Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: MenuItemCard(
+                            item: it,
+                            onAdd: () => _handleAddToCart(it),
+                          ),
                         ),
                       ),
-                    ),
-                    if (items.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: Text(
-                          'No items found.',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: const Color(
-                                  0xFF55423D,
-                                ).withValues(alpha: 0.75),
-                              ),
+                      if (items.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 40),
+                          child: Text(
+                            'No items found.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(
+                                  color: const Color(
+                                    0xFF55423D,
+                                  ).withValues(alpha: 0.75),
+                                ),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

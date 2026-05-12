@@ -6,7 +6,10 @@ import 'package:ipotapp/state/providers.dart';
 import 'qr_scan.provider.dart';
 
 final menuRepositoryProvider = Provider<MenuRepository>((ref) {
-  return MenuRepository(ref.watch(httpServiceProvider));
+  return MenuRepository(
+    ref.watch(httpServiceProvider),
+    ref.watch(menuCacheStoreProvider),
+  );
 });
 
 final menuResponseProvider = FutureProvider.autoDispose<MenuResponse>((
