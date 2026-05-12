@@ -32,3 +32,6 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+      - name: Run integration tests
+        run: flutter test integration_test/ -d flutter-tester
