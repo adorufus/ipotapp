@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'l10n/app_localizations.dart';
 import 'screens/app_shell.screen.dart';
 import 'state/app_scope.dart';
+import 'state/locale_provider.dart';
 import 'utils/color_utils.dart';
 
 void main() {
   runApp(const AppScope(child: MainApp()));
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   static ThemeData _theme() {
@@ -49,7 +52,9 @@ class MainApp extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(appLocaleProvider).valueOrNull;
+
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
@@ -58,6 +63,19 @@ class MainApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: _theme(),
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localeResolutionCallback: (deviceLocale, supported) {
+            if (deviceLocale != null) {
+              for (final loc in supported) {
+                if (loc.languageCode == deviceLocale.languageCode) {
+                  return loc;
+                }
+              }
+            }
+            return supported.first;
+          },
           home: child,
         );
       },

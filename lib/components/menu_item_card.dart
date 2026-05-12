@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/models/menu_response.model.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
@@ -130,7 +131,8 @@ class MenuItemCard extends StatelessWidget {
                     Align(
                       alignment: Alignment.bottomRight,
                       child: Tooltip(
-                        message: 'Add ${item.name} to cart',
+                        message: AppLocalizations.of(context)!
+                            .addToCartTooltip(item.name),
                         child: SizedBox(
                           width: 48,
                           height: 48,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ipotapp/components/menu_item_card.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/models/menu_response.model.dart';
 
 void main() {
@@ -17,6 +18,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(
           body: MenuItemCard(item: item, onAdd: _noop),
         ),
@@ -42,6 +46,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(
           body: MenuItemCard(
             item: item,

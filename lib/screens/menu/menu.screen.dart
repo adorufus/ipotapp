@@ -6,6 +6,7 @@ import 'package:ipotapp/components/menu_item_card.dart';
 import 'package:ipotapp/models/cart.model.dart';
 import 'package:ipotapp/models/menu_response.model.dart';
 import 'package:ipotapp/screens/menu/providers/menu.provider.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
@@ -90,6 +91,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
     if (navIndex != 0) return body;
 
     final bottomGap = 12.0 + MediaQuery.viewPaddingOf(context).bottom;
+    final l10n = AppLocalizations.of(context)!;
 
     return Stack(
       fit: StackFit.expand,
@@ -101,14 +103,15 @@ class _MenuTabState extends ConsumerState<MenuTab> {
           right: 20.w,
           bottom: bottomGap,
           child: AppButton(
-            label: 'View Cart',
+            label: l10n.viewCart,
             leading: const Icon(Icons.shopping_basket_outlined),
             trailing: Consumer(
               builder: (context, ref, _) {
+                final l10nInner = AppLocalizations.of(context)!;
                 final count = ref.watch(cartItemCountProvider);
                 final totalCents = ref.watch(cartTotalCentsProvider);
                 final total = (totalCents / 100).toStringAsFixed(2);
-                return Text('$count items • \$$total');
+                return Text('${l10nInner.itemsCount(count)} • \$$total');
               },
             ),
             height: 56,
@@ -143,10 +146,12 @@ class _MenuTabState extends ConsumerState<MenuTab> {
               navIndex: idx,
               body: asyncMenu.when(
                 data: (menu) {
+                  final l10n = AppLocalizations.of(context)!;
                   final categories = [...menu.categories]
                     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-                  final selectedCategoryId = _selectedCategoryId ??
+                  final selectedCategoryId =
+                      _selectedCategoryId ??
                       (categories.isNotEmpty ? categories.first.id : null);
 
                   final items = menu.items.where((it) {
@@ -157,7 +162,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                     final matchesQuery = q.isEmpty
                         ? true
                         : it.name.toLowerCase().contains(q) ||
-                            it.description.toLowerCase().contains(q);
+                              it.description.toLowerCase().contains(q);
                     return matchesCategory && matchesQuery;
                   }).toList();
 
@@ -165,8 +170,12 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                     onRefresh: _refreshMenu,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding:
-                          EdgeInsets.fromLTRB(20, 80, 20, listBottomPadding),
+                      padding: EdgeInsets.fromLTRB(
+                        20,
+                        80,
+                        20,
+                        listBottomPadding,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -192,11 +201,9 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                             Padding(
                               padding: const EdgeInsets.only(top: 40),
                               child: Text(
-                                'No items found.',
+                                l10n.noItemsFound,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
+                                style: Theme.of(context).textTheme.bodyLarge
                                     ?.copyWith(
                                       color: AppColors.mutedOnLight.withValues(
                                         alpha: 0.75,
@@ -214,7 +221,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
-                      'Failed to load menu.\n$e',
+                      AppLocalizations.of(context)!.failedToLoadMenu('$e'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: AppColors.neutral),
                     ),
@@ -234,9 +241,10 @@ class _MenuLoadingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Semantics(
-        label: 'Loading menu',
+        label: l10n.loadingMenuSemantics,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -244,11 +252,11 @@ class _MenuLoadingBody extends StatelessWidget {
             const CircularProgressIndicator(color: AppColors.primary),
             const SizedBox(height: 20),
             Text(
-              'Loading menu…',
+              l10n.loadingMenu,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.mutedOnLight,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.mutedOnLight,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -264,15 +272,16 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
-      label: 'Search menu',
-      hint: 'Search for your favorite flavors',
+      label: l10n.searchMenuSemantics,
+      hint: l10n.searchMenuHint,
       textField: true,
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search, color: Color(0xFF89726C)),
-          hintText: 'Search for your favorite flavors...',
+          hintText: l10n.searchMenuHint,
           hintStyle: const TextStyle(color: AppColors.hintOnLight),
           filled: true,
           fillColor: const Color(0xFFFBF2EE),
@@ -345,18 +354,18 @@ class _CategoryTabs extends StatelessWidget {
                   color: selected ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color:
-                        selected ? Colors.transparent : const Color(0xFFDCC1B9),
+                    color: selected
+                        ? Colors.transparent
+                        : const Color(0xFFDCC1B9),
                   ),
                 ),
                 child: Center(
                   child: Text(
                     c.name,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color:
-                              selected ? Colors.white : AppColors.mutedOnLight,
-                        ),
+                      fontWeight: FontWeight.w700,
+                      color: selected ? Colors.white : AppColors.mutedOnLight,
+                    ),
                   ),
                 ),
               ),
@@ -447,6 +456,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       top: false,
@@ -473,34 +483,36 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Customize',
+                l10n.customize,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.neutral,
-                    ),
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.neutral,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 item.name,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.mutedOnLight.withValues(alpha: 0.85),
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: AppColors.mutedOnLight.withValues(alpha: 0.85),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 12),
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: item.customizationGroups.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, index) => const SizedBox(height: 16),
                   itemBuilder: (context, i) {
                     final g = item.customizationGroups[i];
                     final groupMap = _qtyByGroupOption[g.id]!;
 
                     final subtitleParts = <String>[];
-                    if (g.required) subtitleParts.add('Required');
+                    if (g.required) {
+                      subtitleParts.add(l10n.customizationRequired);
+                    }
                     if (g.maxSelections > 0) {
-                      subtitleParts.add('Choose up to ${g.maxSelections}');
+                      subtitleParts.add(l10n.chooseUpTo(g.maxSelections));
                     }
                     final subtitle = subtitleParts.join(' • ');
 
@@ -558,8 +570,11 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                             onTap: () => _toggleOption(g, o),
                             leading: g.maxSelections == 1
                                 ? Radio<bool>(
+                                    // ignore: deprecated_member_use
                                     value: true,
+                                    // ignore: deprecated_member_use
                                     groupValue: selected ? true : null,
+                                    // ignore: deprecated_member_use
                                     onChanged: (_) => _toggleOption(g, o),
                                   )
                                 : Checkbox(
@@ -576,7 +591,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                             trailing: delta == null
                                 ? null
                                 : Text(
-                                    '+\$$delta',
+                                    l10n.priceAddModifier(delta),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       color: AppColors.primary,
@@ -591,7 +606,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               ),
               const SizedBox(height: 12),
               AppButton(
-                label: 'Add to cart',
+                label: l10n.addToCart,
                 height: 56,
                 shape: const StadiumBorder(),
                 onPressed: _isValid
@@ -600,7 +615,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               ),
               const SizedBox(height: 8),
               AppButton(
-                label: 'Cancel',
+                label: l10n.cancel,
                 height: 52,
                 shape: const StadiumBorder(),
                 variant: AppButtonVariant.outlined,

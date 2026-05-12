@@ -5,6 +5,7 @@ import 'package:ipotapp/models/api_error.model.dart';
 import 'package:ipotapp/models/cart.model.dart';
 import 'package:ipotapp/models/menu_response.model.dart';
 import 'package:ipotapp/models/order.model.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/screens/menu/providers/menu.provider.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
@@ -41,11 +42,13 @@ class CartTab extends ConsumerWidget {
     final lines = cart.linesById.values.toList()
       ..sort((a, b) => a.lineId.compareTo(b.lineId));
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (lines.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'Your cart is empty.',
-          style: TextStyle(
+          l10n.cartEmpty,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.neutral,
@@ -64,7 +67,8 @@ class CartTab extends ConsumerWidget {
             itemBuilder: (context, index) {
               final line = lines[index];
               final item = itemsById[line.menuItemId] as MenuItem?;
-              final name = item?.name ?? 'Item #${line.menuItemId}';
+              final name =
+                  item?.name ?? l10n.itemNumberFallback(line.menuItemId);
               final baseCents = item?.priceCents ?? 0;
               var unitCents = baseCents;
               for (final sel in line.selectedOptions) {
@@ -130,7 +134,7 @@ class CartTab extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            tooltip: 'Decrease $name quantity',
+                            tooltip: l10n.decreaseQuantityTooltip(name),
                             onPressed: () => ref
                                 .read(cartControllerProvider.notifier)
                                 .decrement(line.lineId),
@@ -145,7 +149,7 @@ class CartTab extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
-                            tooltip: 'Increase $name quantity',
+                            tooltip: l10n.increaseQuantityTooltip(name),
                             onPressed: () => ref
                                 .read(cartControllerProvider.notifier)
                                 .increment(line.lineId),
@@ -175,14 +179,15 @@ class CartTab extends ConsumerWidget {
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
                       ),
-                      child: const Text('Clear cart'),
+                      child: Text(l10n.clearCart),
                     ),
                     Consumer(
                       builder: (context, ref, _) {
+                        final l10n = AppLocalizations.of(context)!;
                         final totalCents = ref.watch(cartTotalCentsProvider);
                         final total = (totalCents / 100).toStringAsFixed(2);
                         return Text(
-                          'Total: \$$total',
+                          l10n.totalLine(total),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -197,7 +202,9 @@ class CartTab extends ConsumerWidget {
                 AppButton(
                   height: 56,
                   shape: const StadiumBorder(),
-                  label: checkout.submitting ? 'Placing order…' : 'Checkout',
+                  label: checkout.submitting
+                      ? AppLocalizations.of(context)!.placingOrderEllipsis
+                      : AppLocalizations.of(context)!.checkout,
                   onPressed: checkout.submitting
                       ? null
                       : () => _submitOrder(context, ref),
@@ -213,14 +220,13 @@ class CartTab extends ConsumerWidget {
 
 Future<void> _submitOrder(BuildContext context, WidgetRef ref) async {
   final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
   final menu = ref.read(menuResponseProvider).valueOrNull;
   final cart = ref.read(cartControllerProvider);
 
   if (menu == null) {
     messenger.showSnackBar(
-      const SnackBar(
-        content: Text('Connect to a table and wait for the menu to load.'),
-      ),
+      SnackBar(content: Text(l10n.connectTableFirstSnackbar)),
     );
     return;
   }
@@ -260,8 +266,8 @@ Future<void> _submitOrder(BuildContext context, WidgetRef ref) async {
       SnackBar(
         content: Text(
           isQueued
-              ? 'Order saved on this device (${res.order.id}). It will send when you are back online.'
-              : 'Order ${res.order.id} placed',
+              ? l10n.orderQueuedOffline(res.order.id)
+              : l10n.orderPlaced(res.order.id),
         ),
       ),
     );
@@ -285,13 +291,16 @@ class _CustomizationSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final parts = <String>[];
     for (final sel in [
       ...selected,
     ]..sort((a, b) => a.optionId.compareTo(b.optionId))) {
       final opt = optionById[sel.optionId];
-      final name = opt?.name ?? 'Option #${sel.optionId}';
-      parts.add(sel.quantity == 1 ? name : '$name x${sel.quantity}');
+      final name = opt?.name ?? l10n.optionNumberFallback(sel.optionId);
+      parts.add(
+        sel.quantity == 1 ? name : l10n.optionWithQuantity(name, sel.quantity),
+      );
     }
 
     return Text(

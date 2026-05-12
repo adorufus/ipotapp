@@ -2,7 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ipotapp/components/language_menu_button.dart';
 import 'package:ipotapp/components/network_status_banner.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/state/providers.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
@@ -78,6 +80,7 @@ class AppBottomNavigationBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final idx = ref.watch(bottomNavIndexProvider);
     final h = reservedHeight(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       top: false,
@@ -107,21 +110,21 @@ class AppBottomNavigationBar extends ConsumerWidget {
                     _NavItem(
                       selected: idx == 0,
                       icon: Icons.menu_book_outlined,
-                      label: 'Menu',
+                      label: l10n.navMenu,
                       onTap: () =>
                           ref.read(bottomNavIndexProvider.notifier).state = 0,
                     ),
                     _NavItem(
                       selected: idx == 1,
                       icon: Icons.shopping_cart_outlined,
-                      label: 'Cart',
+                      label: l10n.navCart,
                       onTap: () =>
                           ref.read(bottomNavIndexProvider.notifier).state = 1,
                     ),
                     _NavItem(
                       selected: idx == 2,
                       icon: Icons.receipt_long_outlined,
-                      label: 'Orders',
+                      label: l10n.navOrders,
                       onTap: () =>
                           ref.read(bottomNavIndexProvider.notifier).state = 2,
                     ),
@@ -164,37 +167,26 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final qrState = ref.watch(qrScanControllerProvider);
     final resolvedTitle =
         title ??
         (qrState.qrCode != null
-            ? 'Table ${qrState.qrCode?.split('/').last}'
-            : 'Welcome to Ipot');
+            ? l10n.tableTitle(qrState.qrCode!.split('/').last)
+            : l10n.welcomeToIpot);
 
     final canPop = ModalRoute.of(context)?.canPop ?? false;
     final resolvedLeading =
         leading ??
         (canPop
             ? IconButton(
-                tooltip: 'Back',
+                tooltip: l10n.backTooltip,
                 icon: const Icon(Icons.arrow_back, color: AppColors.neutral),
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null);
 
-    final resolvedActions =
-        actions ??
-        [
-          IconButton(
-            tooltip: 'Info',
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Info coming soon')));
-            },
-            icon: const Icon(Icons.info_outline, color: AppColors.neutral),
-          ),
-        ];
+    final resolvedActions = actions ?? [const LanguageMenuButton()];
 
     return Scaffold(
       extendBodyBehindAppBar: extendBodyBehindAppBar,

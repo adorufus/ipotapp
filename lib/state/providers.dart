@@ -9,4 +9,5 @@ export 'cart/cart_providers.dart';
 export 'checkout/checkout_providers.dart';
 export 'checkout/order_outbound_sync.dart';
 export 'ui/navigation_providers.dart';
+export 'locale_provider.dart';
 

@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
+  intl: any
   qr_code_scanner: ^1.0.1
   dio: ^5.9.2
   flutter_screenutil: ^5.9.3
@@ -23,4 +26,5 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
+  generate: true
   uses-material-design: true

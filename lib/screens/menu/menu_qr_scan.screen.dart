@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/components/app_button.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 
 import 'qr_camera.screen.dart';
@@ -13,6 +14,7 @@ class QrScanTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: Stack(
@@ -34,8 +36,8 @@ class QrScanTab extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const SizedBox(height: 8),
-                            const Text(
-                              'Ready to order?',
+                            Text(
+                              l10n.readyToOrder,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 30,
@@ -52,7 +54,7 @@ class QrScanTab extends ConsumerWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Scan the code on your table to browse our menu.',
+                                      l10n.scanTableInstruction,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 16,
@@ -65,7 +67,7 @@ class QrScanTab extends ConsumerWidget {
                                     const QrPlaceholder(),
                                     const SizedBox(height: 24),
                                     AppButton(
-                                      label: 'Scan to Order',
+                                      label: l10n.scanToOrder,
                                       leading: const Icon(
                                         Icons.photo_camera_outlined,
                                       ),
@@ -94,7 +96,7 @@ class QrScanTab extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 12),
                                     AppButton(
-                                      label: 'Bypass QR (Table T001)',
+                                      label: l10n.bypassQrTableT001,
                                       leading: const Icon(Icons.bolt_outlined),
                                       height: 52,
                                       shape: const StadiumBorder(),
@@ -108,15 +110,15 @@ class QrScanTab extends ConsumerWidget {
                                       },
                                     ),
                                     const SizedBox(height: 12),
-                                    const Row(
+                                    Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        PulseDot(),
-                                        SizedBox(width: 8),
+                                        const PulseDot(),
+                                        const SizedBox(width: 8),
                                         Text(
-                                          'ACTIVE TABLE CONNECTION',
-                                          style: TextStyle(
+                                          l10n.activeTableConnection,
+                                          style: const TextStyle(
                                             fontSize: 12,
                                             height: 16 / 12,
                                             fontWeight: FontWeight.w600,

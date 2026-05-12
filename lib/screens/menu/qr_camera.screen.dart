@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/components/app_scaffold.dart';
+import 'package:ipotapp/components/language_menu_button.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/utils/color_utils.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -31,6 +33,7 @@ class _QrCameraScreenState extends ConsumerState<QrCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(qrScanControllerProvider);
 
     ref.listen<QrScanState>(qrScanControllerProvider, (previous, next) {
@@ -47,22 +50,23 @@ class _QrCameraScreenState extends ConsumerState<QrCameraScreen> {
     });
 
     return AppScaffold(
-      title: 'Scan QR Code',
+      title: l10n.scanQrCodeTitle,
       backgroundColor: Colors.black,
       actions: [
+        const LanguageMenuButton(),
         IconButton(
-          tooltip: 'Toggle flash',
+          tooltip: l10n.toggleFlashTooltip,
           onPressed: () {
             ref.read(qrScanControllerProvider.notifier).toggleFlash();
           },
           icon: const Icon(Icons.flash_on, color: AppColors.neutral),
         ),
         IconButton(
-          tooltip: 'Info',
+          tooltip: l10n.infoTooltip,
           onPressed: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Info coming soon')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.infoComingSoon)),
+            );
           },
           icon: const Icon(Icons.info_outline, color: AppColors.neutral),
         ),
@@ -108,8 +112,8 @@ class _QrCameraScreenState extends ConsumerState<QrCameraScreen> {
                       Expanded(
                         child: Text(
                           state.isScanning
-                              ? 'Point your camera at the QR code.'
-                              : 'Tap the camera to start scanning.',
+                              ? l10n.pointCameraAtQr
+                              : l10n.tapCameraToStart,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -127,7 +131,7 @@ class _QrCameraScreenState extends ConsumerState<QrCameraScreen> {
                         onPressed: () {
                           ref.read(qrScanControllerProvider.notifier).resume();
                         },
-                        child: const Text('Scan'),
+                        child: Text(l10n.scan),
                       ),
                     ],
                   ),

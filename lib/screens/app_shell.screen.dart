@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ipotapp/components/app_scaffold.dart';
+import 'package:ipotapp/components/language_menu_button.dart';
 import 'package:ipotapp/components/network_status_banner.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/screens/cart/cart.screen.dart';
 import 'package:ipotapp/screens/menu/menu.screen.dart';
 import 'package:ipotapp/screens/orders/orders.screen.dart';
@@ -28,9 +30,10 @@ class AppShellScreen extends ConsumerWidget {
 
     final idx = ref.watch(bottomNavIndexProvider);
     final qrState = ref.watch(qrScanControllerProvider);
+    final l10n = AppLocalizations.of(context)!;
     final title = qrState.qrCode != null
-        ? 'Table ${qrState.qrCode?.split('/').last}'
-        : 'Welcome to Ipot';
+        ? l10n.tableTitle(qrState.qrCode!.split('/').last)
+        : l10n.welcomeToIpot;
 
     return Scaffold(
       extendBodyBehindAppBar: idx == 0,
@@ -38,12 +41,13 @@ class AppShellScreen extends ConsumerWidget {
       appBar: GlobalGlassAppBar(
         title: title,
         actions: [
+          const LanguageMenuButton(),
           IconButton(
-            tooltip: 'Info',
+            tooltip: l10n.infoTooltip,
             onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Info coming soon')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.infoComingSoon)),
+              );
             },
             icon: const Icon(Icons.info_outline, color: AppColors.neutral),
           ),

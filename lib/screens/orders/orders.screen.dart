@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/models/api_error.model.dart';
 import 'package:ipotapp/models/order.model.dart';
 import 'package:ipotapp/services/pending_orders_store.dart';
@@ -46,13 +47,14 @@ class OrdersTab extends ConsumerWidget {
     final checkout = ref.watch(checkoutControllerProvider);
     final pendingAsync = ref.watch(pendingOrdersListProvider);
     final last = checkout.lastOrder;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (checkout.submitting)
           Semantics(
-            label: 'Placing order',
+            label: l10n.placingOrderSemantics,
             child: const LinearProgressIndicator(minHeight: 3),
           ),
         if (checkout.submitError != null)
@@ -75,7 +77,7 @@ class OrdersTab extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Dismiss',
+                    tooltip: l10n.dismissTooltip,
                     onPressed: () => ref
                         .read(checkoutControllerProvider.notifier)
                         .clearSubmitError(),
@@ -95,7 +97,7 @@ class OrdersTab extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 children: [
                   Text(
-                    'Could not load pending orders: $e',
+                    l10n.couldNotLoadPendingOrders('$e'),
                     style: const TextStyle(color: AppColors.neutral),
                   ),
                 ],
@@ -121,20 +123,20 @@ class OrdersTab extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'No orders yet',
+                      Text(
+                        l10n.noOrdersYet,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: AppColors.neutral,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'When you check out from the cart, your order will show up here.',
+                      Text(
+                        l10n.noOrdersYetSubtitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           height: 1.35,
                           color: AppColors.mutedOnLight,
@@ -149,7 +151,7 @@ class OrdersTab extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
                     if (hasQueue) ...[
-                      const _SectionTitle('Waiting to send'),
+                      _SectionTitle(l10n.waitingToSend),
                       const SizedBox(height: 10),
                       ...pendingDisplayed.map(
                         (e) => Padding(
@@ -160,7 +162,7 @@ class OrdersTab extends ConsumerWidget {
                       const SizedBox(height: 8),
                     ],
                     if (hasLast) ...[
-                      const _SectionTitle('Latest order'),
+                      _SectionTitle(l10n.latestOrder),
                       const SizedBox(height: 10),
                       _LastOrderCard(order: last),
                     ],
@@ -215,6 +217,7 @@ class _PendingOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final n = entry.request.items.fold<int>(0, (s, i) => s + i.quantity);
 
     return DecoratedBox(
@@ -240,7 +243,7 @@ class _PendingOrderCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Table ${entry.request.tableId}',
+                    l10n.tableTitle(entry.request.tableId),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -249,7 +252,7 @@ class _PendingOrderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$n items • will send when you are online',
+                    l10n.pendingQueueSubtitle(n),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -281,6 +284,7 @@ class _LastOrderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final isLocal = order.id.startsWith('local_');
     final checkout = ref.watch(checkoutControllerProvider);
 
@@ -315,19 +319,19 @@ class _LastOrderCard extends ConsumerWidget {
                 ),
                 if (isLocal)
                   _StatusChip(
-                    label: 'Pending sync',
+                    label: l10n.pendingSync,
                     color: const Color(0xFFB45309),
                   )
                 else
                   _StatusChip(
-                    label: _statusLabel(order.status),
+                    label: _statusLabel(l10n, order.status),
                     color: AppColors.primary,
                   ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
-              'Table ${order.tableId}',
+              l10n.tableTitle(order.tableId),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -337,8 +341,12 @@ class _LastOrderCard extends ConsumerWidget {
             if (order.total != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Total: \$${order.total!.toStringAsFixed(2)} ${order.currency ?? ''}'
-                    .trim(),
+                l10n.orderTotalLine(
+                  '\$${order.total!.toStringAsFixed(2)}',
+                  order.currency != null && order.currency!.isNotEmpty
+                      ? ' ${order.currency}'
+                      : '',
+                ).trim(),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
@@ -402,8 +410,8 @@ class _LastOrderCard extends ConsumerWidget {
                                   .refreshOrder(orderId: order.id);
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Order updated from server'),
+                                SnackBar(
+                                  content: Text(l10n.orderUpdatedFromServer),
                                 ),
                               );
                             } on ApiError catch (e) {
@@ -414,7 +422,7 @@ class _LastOrderCard extends ConsumerWidget {
                             }
                           },
                     icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Refresh'),
+                    label: Text(l10n.refresh),
                   ),
                   const Spacer(),
                   TextButton.icon(
@@ -427,7 +435,7 @@ class _LastOrderCard extends ConsumerWidget {
                       color: Colors.red.shade700,
                     ),
                     label: Text(
-                      'Cancel',
+                      l10n.cancel,
                       style: TextStyle(color: Colors.red.shade700),
                     ),
                   ),
@@ -445,21 +453,23 @@ class _LastOrderCard extends ConsumerWidget {
     WidgetRef ref,
     String orderId,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel order?'),
-        content: const Text(
-          'This asks the restaurant system to remove the order. You can’t undo this from the app.',
-        ),
+        title: Text(l10n.cancelOrderTitle),
+        content: Text(l10n.cancelOrderBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Keep order'),
+            child: Text(l10n.keepOrder),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Cancel order', style: TextStyle(color: Colors.red.shade700)),
+            child: Text(
+              l10n.cancelOrderAction,
+              style: TextStyle(color: Colors.red.shade700),
+            ),
           ),
         ],
       ),
@@ -471,7 +481,7 @@ class _LastOrderCard extends ConsumerWidget {
           );
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order cancelled')),
+        SnackBar(content: Text(l10n.orderCancelled)),
       );
     } on ApiError catch (e) {
       if (!context.mounted) return;
@@ -508,17 +518,17 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-String _statusLabel(OrderStatus s) {
+String _statusLabel(AppLocalizations l10n, OrderStatus s) {
   switch (s) {
     case OrderStatus.pending:
-      return 'Pending';
+      return l10n.orderStatusPending;
     case OrderStatus.confirmed:
-      return 'Confirmed';
+      return l10n.orderStatusConfirmed;
     case OrderStatus.preparing:
-      return 'Preparing';
+      return l10n.orderStatusPreparing;
     case OrderStatus.ready:
-      return 'Ready';
+      return l10n.orderStatusReady;
     case OrderStatus.served:
-      return 'Served';
+      return l10n.orderStatusServed;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/state/core/connectivity_providers.dart';
 import 'package:ipotapp/state/core/device_network_status.dart';
 
@@ -19,10 +20,12 @@ class NetworkStatusBanner extends ConsumerWidget {
         if (status != DeviceNetworkStatus.offline) {
           return const SizedBox.shrink();
         }
+        final l10n = AppLocalizations.of(context)!;
+        final message = l10n.offlineBannerMessage;
         return Semantics(
           container: true,
           liveRegion: true,
-          label: "You're offline. Check Wi-Fi or mobile data.",
+          label: message,
           child: Material(
             color: const Color(0xFFB42318),
             child: Padding(
@@ -33,7 +36,7 @@ class NetworkStatusBanner extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "You're offline. Check Wi‑Fi or mobile data.",
+                      message,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
