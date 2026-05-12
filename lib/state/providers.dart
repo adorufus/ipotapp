@@ -8,6 +8,7 @@ export 'core/order_repository_provider.dart';
 export 'cart/cart_providers.dart';
 export 'checkout/checkout_providers.dart';
 export 'checkout/order_outbound_sync.dart';
+export 'orders/order_history_provider.dart';
 export 'ui/navigation_providers.dart';
 export 'locale_provider.dart';
 

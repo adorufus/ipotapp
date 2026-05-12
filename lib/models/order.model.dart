@@ -127,6 +127,22 @@ class OrderResponse {
   );
 }
 
+class OrdersListResponse {
+  final List<Order> orders;
+  const OrdersListResponse({required this.orders});
+
+  factory OrdersListResponse.fromJson(Map<String, dynamic> json) {
+    final raw = json['orders'];
+    final list = raw is List
+        ? raw
+              .whereType<Map>()
+              .map((m) => Order.fromJson(m.cast<String, dynamic>()))
+              .toList()
+        : const <Order>[];
+    return OrdersListResponse(orders: list);
+  }
+}
+
 class Order {
   final String id;
   final String restaurantId;

@@ -24,6 +24,7 @@ class OrdersTab extends ConsumerWidget {
     ref.listen<int>(bottomNavIndexProvider, (previous, next) {
       if (next == _ordersTabIndex) {
         ref.invalidate(pendingOrdersListProvider);
+        ref.invalidate(tableOrderHistoryProvider);
       }
     });
 
@@ -32,6 +33,7 @@ class OrdersTab extends ConsumerWidget {
         if (status != DeviceNetworkStatus.offline) {
           Future<void>.delayed(const Duration(milliseconds: 600), () {
             ref.invalidate(pendingOrdersListProvider);
+            ref.invalidate(tableOrderHistoryProvider);
           });
         }
       });
@@ -42,12 +44,43 @@ class OrdersTab extends ConsumerWidget {
       if (id != null && id.startsWith('local_')) {
         ref.invalidate(pendingOrdersListProvider);
       }
+      final prevId = previous?.lastOrder?.id;
+      if (id != null && !id.startsWith('local_') && id != prevId) {
+        ref.invalidate(tableOrderHistoryProvider);
+      }
     });
 
     final checkout = ref.watch(checkoutControllerProvider);
     final pendingAsync = ref.watch(pendingOrdersListProvider);
+    final historyAsync = ref.watch(tableOrderHistoryProvider);
     final last = checkout.lastOrder;
     final l10n = AppLocalizations.of(context)!;
+
+    final listLoading = pendingAsync.isLoading || historyAsync.isLoading;
+    final pendingList = pendingAsync.maybeWhen(
+      data: (d) => d,
+      orElse: () => <PendingOrderEntry>[],
+    );
+    final localLast =
+        last != null && last.id.startsWith('local_') ? last : null;
+    final pendingDisplayed = pendingList
+        .where(
+          (e) => localLast == null || e.localId != localLast.id,
+        )
+        .toList();
+    final hasQueue = pendingDisplayed.isNotEmpty;
+    final historyList = historyAsync.maybeWhen(
+      data: (d) => d,
+      orElse: () => <Order>[],
+    );
+    final hasHistory = historyList.isNotEmpty;
+    final showFullEmpty =
+        !hasQueue &&
+        localLast == null &&
+        !hasHistory &&
+        !listLoading &&
+        !pendingAsync.hasError &&
+        !historyAsync.hasError;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,6 +90,8 @@ class OrdersTab extends ConsumerWidget {
             label: l10n.placingOrderSemantics,
             child: const LinearProgressIndicator(minHeight: 3),
           ),
+        if (listLoading && !checkout.submitting)
+          const LinearProgressIndicator(minHeight: 2),
         if (checkout.submitError != null)
           Material(
             color: const Color(0xFFFFF4E5),
@@ -90,27 +125,8 @@ class OrdersTab extends ConsumerWidget {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => _onRefresh(ref),
-            child: pendingAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24),
-                children: [
-                  Text(
-                    l10n.couldNotLoadPendingOrders('$e'),
-                    style: const TextStyle(color: AppColors.neutral),
-                  ),
-                ],
-              ),
-              data: (pending) {
-                final pendingDisplayed = pending
-                    .where((e) => last == null || e.localId != last.id)
-                    .toList();
-                final hasQueue = pendingDisplayed.isNotEmpty;
-                final hasLast = last != null;
-
-                if (!hasQueue && !hasLast) {
-                  return ListView(
+            child: showFullEmpty
+                ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -143,33 +159,62 @@ class OrdersTab extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  );
-                }
-
-                return ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  children: [
-                    if (hasQueue) ...[
-                      _SectionTitle(l10n.waitingToSend),
-                      const SizedBox(height: 10),
-                      ...pendingDisplayed.map(
-                        (e) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _PendingOrderCard(entry: e),
+                  )
+                : ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    children: [
+                      if (pendingAsync.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            l10n.couldNotLoadPendingOrders(
+                              '${pendingAsync.error}',
+                            ),
+                            style: const TextStyle(color: AppColors.neutral),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
+                      if (historyAsync.hasError) ...[
+                        _SectionTitle(l10n.orderHistory),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.orderHistoryLoadFailed('${historyAsync.error}'),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.neutral,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (hasQueue) ...[
+                        _SectionTitle(l10n.waitingToSend),
+                        const SizedBox(height: 10),
+                        ...pendingDisplayed.map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _PendingOrderCard(entry: e),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (localLast != null) ...[
+                        _SectionTitle(l10n.latestOrder),
+                        const SizedBox(height: 10),
+                        _LastOrderCard(order: localLast),
+                        const SizedBox(height: 8),
+                      ],
+                      if (hasHistory) ...[
+                        _SectionTitle(l10n.orderHistory),
+                        const SizedBox(height: 10),
+                        ...historyList.map(
+                          (o) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _LastOrderCard(order: o),
+                          ),
+                        ),
+                      ],
                     ],
-                    if (hasLast) ...[
-                      _SectionTitle(l10n.latestOrder),
-                      const SizedBox(height: 10),
-                      _LastOrderCard(order: last),
-                    ],
-                  ],
-                );
-              },
-            ),
+                  ),
           ),
         ),
       ],
@@ -178,6 +223,10 @@ class OrdersTab extends ConsumerWidget {
 
   static Future<void> _onRefresh(WidgetRef ref) async {
     ref.invalidate(pendingOrdersListProvider);
+    ref.invalidate(tableOrderHistoryProvider);
+    try {
+      await ref.read(tableOrderHistoryProvider.future);
+    } catch (_) {}
     final last = ref.read(checkoutControllerProvider).lastOrder;
     if (last != null && !last.id.startsWith('local_')) {
       try {
@@ -408,6 +457,7 @@ class _LastOrderCard extends ConsumerWidget {
                               await ref
                                   .read(checkoutControllerProvider.notifier)
                                   .refreshOrder(orderId: order.id);
+                              ref.invalidate(tableOrderHistoryProvider);
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -479,6 +529,7 @@ class _LastOrderCard extends ConsumerWidget {
       await ref.read(checkoutControllerProvider.notifier).cancelOrder(
             orderId: orderId,
           );
+      ref.invalidate(tableOrderHistoryProvider);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.orderCancelled)),

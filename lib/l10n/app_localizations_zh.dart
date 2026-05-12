@@ -203,6 +203,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get latestOrder => '最近订单';
 
   @override
+  String get orderHistory => '订单记录';
+
+  @override
+  String orderHistoryLoadFailed(String error) {
+    return '无法加载订单记录：$error';
+  }
+
+  @override
   String pendingQueueSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

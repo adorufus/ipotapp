@@ -209,6 +209,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get latestOrder => 'Latest order';
 
   @override
+  String get orderHistory => 'Order history';
+
+  @override
+  String orderHistoryLoadFailed(String error) {
+    return 'Could not load order history: $error';
+  }
+
+  @override
   String pendingQueueSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

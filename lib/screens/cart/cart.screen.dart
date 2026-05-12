@@ -262,6 +262,9 @@ Future<void> _submitOrder(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) return;
     ref.read(cartControllerProvider.notifier).clear();
     final isQueued = res.order.id.startsWith('local_');
+    if (!isQueued) {
+      ref.invalidate(tableOrderHistoryProvider);
+    }
     messenger.showSnackBar(
       SnackBar(
         content: Text(

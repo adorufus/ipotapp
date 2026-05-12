@@ -161,6 +161,15 @@
   "noOrdersYetSubtitle": "When you check out from the cart, your order will show up here.",
   "waitingToSend": "Waiting to send",
   "latestOrder": "Latest order",
+  "orderHistory": "Order history",
+  "orderHistoryLoadFailed": "Could not load order history: {error}",
+  "@orderHistoryLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "pendingQueueSubtitle": "{count, plural, one{1 item • will send when you are online} other{{count} items • will send when you are online}}",
   "@pendingQueueSubtitle": {
     "placeholders": {

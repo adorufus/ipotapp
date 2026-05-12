@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'Latest order'**
   String get latestOrder;
 
+  /// No description provided for @orderHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Order history'**
+  String get orderHistory;
+
+  /// No description provided for @orderHistoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load order history: {error}'**
+  String orderHistoryLoadFailed(String error);
+
   /// No description provided for @pendingQueueSubtitle.
   ///
   /// In en, this message translates to:

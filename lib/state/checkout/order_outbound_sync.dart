@@ -4,6 +4,7 @@ import 'package:ipotapp/state/core/connectivity_providers.dart';
 import 'package:ipotapp/state/core/device_network_status.dart';
 import 'package:ipotapp/state/core/local_store_providers.dart';
 import 'package:ipotapp/state/core/order_repository_provider.dart';
+import 'package:ipotapp/state/orders/order_history_provider.dart';
 import 'package:ipotapp/utils/network_reachability.dart';
 
 final orderOutboundSyncProvider = Provider<OrderOutboundSync>((ref) {
@@ -22,6 +23,7 @@ class OrderOutboundSync {
     if (status == null || status == DeviceNetworkStatus.offline) return;
     if (_busy) return;
     _busy = true;
+    var removedAny = false;
     try {
       final store = _ref.read(pendingOrdersStoreProvider);
       final repo = _ref.read(orderRepositoryProvider);
@@ -30,6 +32,7 @@ class OrderOutboundSync {
         try {
           await repo.createOrder(request: p.request);
           await store.remove(p.localId);
+          removedAny = true;
         } on ApiError catch (e) {
           if (isUnreachableError(e)) break;
           break;
@@ -37,6 +40,9 @@ class OrderOutboundSync {
       }
     } finally {
       _busy = false;
+      if (removedAny) {
+        _ref.invalidate(tableOrderHistoryProvider);
+      }
     }
   }
 }

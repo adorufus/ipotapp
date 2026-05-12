@@ -38,6 +38,23 @@ class OrderRepository {
     }
   }
 
+  /// Lists orders for a table (`GET /orders?table_id=`).
+  Future<List<Order>> listOrdersForTable({
+    required String tableId,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final res = await _http.get<dynamic>(
+        '/orders',
+        queryParameters: {'table_id': tableId},
+        cancelToken: cancelToken,
+      );
+      return _parseOrdersListResponse(res.data).orders;
+    } on DioException catch (e) {
+      _throwApiFromDio(e);
+    }
+  }
+
   /// Removes the order on the server (mock API: `DELETE /orders/:id`).
   Future<void> cancelOrder({
     required String orderId,
@@ -57,6 +74,14 @@ class OrderRepository {
     if (data is Map<String, dynamic>) return OrderResponse.fromJson(data);
     if (data is Map) {
       return OrderResponse.fromJson(data.cast<String, dynamic>());
+    }
+    throw StateError('Unexpected response type: ${data.runtimeType}');
+  }
+
+  OrdersListResponse _parseOrdersListResponse(dynamic data) {
+    if (data is Map<String, dynamic>) return OrdersListResponse.fromJson(data);
+    if (data is Map) {
+      return OrdersListResponse.fromJson(data.cast<String, dynamic>());
     }
     throw StateError('Unexpected response type: ${data.runtimeType}');
   }
