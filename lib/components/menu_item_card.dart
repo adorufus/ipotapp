@@ -49,6 +49,7 @@ class MenuItemCard extends StatelessWidget {
                           : Image.network(
                               item.imageUrl!,
                               fit: BoxFit.cover,
+                              semanticLabel: item.name,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Center(
                                 child: Icon(
@@ -122,25 +123,28 @@ class MenuItemCard extends StatelessWidget {
                           fontSize: 14,
                           height: 20 / 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF55423D),
+                          color: AppColors.mutedOnLight,
                         ),
                       ),
                     ),
                     Align(
                       alignment: Alignment.bottomRight,
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.zero,
-                            shape: const CircleBorder(),
-                            elevation: 6,
+                      child: Tooltip(
+                        message: 'Add ${item.name} to cart',
+                        child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.zero,
+                              shape: const CircleBorder(),
+                              elevation: 6,
+                            ),
+                            onPressed: onAdd,
+                            child: const Icon(Icons.add, size: 22),
                           ),
-                          onPressed: onAdd,
-                          child: const Icon(Icons.add, size: 22),
                         ),
                       ),
                     ),

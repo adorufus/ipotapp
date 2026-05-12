@@ -19,25 +19,30 @@ class NetworkStatusBanner extends ConsumerWidget {
         if (status != DeviceNetworkStatus.offline) {
           return const SizedBox.shrink();
         }
-        return Material(
-          color: const Color(0xFFB42318),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    "You're offline. Check Wi‑Fi or mobile data.",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      height: 1.25,
+        return Semantics(
+          container: true,
+          liveRegion: true,
+          label: "You're offline. Check Wi-Fi or mobile data.",
+          child: Material(
+            color: const Color(0xFFB42318),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "You're offline. Check Wi‑Fi or mobile data.",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

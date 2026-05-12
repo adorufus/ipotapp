@@ -117,9 +117,9 @@ class CartTab extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(
-                                  0xFF55423D,
-                                ).withValues(alpha: 0.85),
+                                color: AppColors.mutedOnLight.withValues(
+                                  alpha: 0.85,
+                                ),
                               ),
                             ),
                           ],
@@ -130,6 +130,7 @@ class CartTab extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
+                            tooltip: 'Decrease $name quantity',
                             onPressed: () => ref
                                 .read(cartControllerProvider.notifier)
                                 .decrement(line.lineId),
@@ -144,6 +145,7 @@ class CartTab extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
+                            tooltip: 'Increase $name quantity',
                             onPressed: () => ref
                                 .read(cartControllerProvider.notifier)
                                 .increment(line.lineId),
@@ -170,6 +172,9 @@ class CartTab extends ConsumerWidget {
                     TextButton(
                       onPressed: () =>
                           ref.read(cartControllerProvider.notifier).clear(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                      ),
                       child: const Text('Clear cart'),
                     ),
                     Consumer(
@@ -297,7 +302,7 @@ class _CustomizationSummary extends StatelessWidget {
         fontSize: 12,
         height: 16 / 12,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFF55423D).withValues(alpha: 0.75),
+        color: AppColors.mutedOnLight.withValues(alpha: 0.75),
       ),
     );
   }

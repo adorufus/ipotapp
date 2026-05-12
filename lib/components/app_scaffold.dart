@@ -30,7 +30,9 @@ class GlobalGlassAppBar extends StatelessWidget implements PreferredSizeWidget {
         leading ??
         const Padding(
           padding: EdgeInsets.only(left: 16),
-          child: Icon(Icons.restaurant, color: AppColors.primary),
+          child: ExcludeSemantics(
+            child: Icon(Icons.restaurant, color: AppColors.primary),
+          ),
         );
 
     return ClipRect(
@@ -65,7 +67,9 @@ class AppBottomNavigationBar extends ConsumerWidget {
   /// Base content height (icon + label + padding). Must be a **tight** height: the
   /// scaffold bottom slot often passes a very large `maxHeight`; unconstrained
   /// children like [Center] would otherwise expand and steal the whole screen.
-  static double _barHeight(BuildContext context) {
+  ///
+  /// Exposed so tab bodies (e.g. menu) can pad scrollables to sit above the bar.
+  static double reservedHeight(BuildContext context) {
     final scaled = MediaQuery.textScalerOf(context).scale(92);
     return scaled.clamp(80, 128);
   }
@@ -73,7 +77,7 @@ class AppBottomNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final idx = ref.watch(bottomNavIndexProvider);
-    final h = _barHeight(context);
+    final h = reservedHeight(context);
 
     return SafeArea(
       top: false,
@@ -172,6 +176,7 @@ class AppScaffold extends ConsumerWidget {
         leading ??
         (canPop
             ? IconButton(
+                tooltip: 'Back',
                 icon: const Icon(Icons.arrow_back, color: AppColors.neutral),
                 onPressed: () => Navigator.of(context).maybePop(),
               )
@@ -232,44 +237,50 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? AppColors.primary : const Color(0xFF55423D);
+    final fg = selected ? AppColors.primary : AppColors.mutedOnLight;
     final bg = selected
         ? AppColors.primary.withValues(alpha: 0.10)
         : Colors.transparent;
 
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: Align(
-            alignment: Alignment.center,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: fg, size: 22),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: fg,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
-                      fontSize: 12,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            child: Align(
+              alignment: Alignment.center,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: fg, size: 22),
+                    const SizedBox(height: 4),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: fg,
+                        fontWeight: FontWeight.w600,
+                        height: 1.15,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

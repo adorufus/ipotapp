@@ -51,7 +51,10 @@ class OrdersTab extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (checkout.submitting)
-          const LinearProgressIndicator(minHeight: 3),
+          Semantics(
+            label: 'Placing order',
+            child: const LinearProgressIndicator(minHeight: 3),
+          ),
         if (checkout.submitError != null)
           Material(
             color: const Color(0xFFFFF4E5),
@@ -108,15 +111,17 @@ class OrdersTab extends ConsumerWidget {
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(24),
-                    children: const [
-                      SizedBox(height: 48),
-                      Icon(
-                        Icons.receipt_long_outlined,
-                        size: 56,
-                        color: Color(0xFF55423D),
+                    children: [
+                      const SizedBox(height: 48),
+                      const ExcludeSemantics(
+                        child: Icon(
+                          Icons.receipt_long_outlined,
+                          size: 56,
+                          color: AppColors.mutedOnLight,
+                        ),
                       ),
-                      SizedBox(height: 16),
-                      Text(
+                      const SizedBox(height: 16),
+                      const Text(
                         'No orders yet',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -125,14 +130,14 @@ class OrdersTab extends ConsumerWidget {
                           color: AppColors.neutral,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         'When you check out from the cart, your order will show up here.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.35,
-                          color: Color(0xFF55423D),
+                          color: AppColors.mutedOnLight,
                         ),
                       ),
                     ],
@@ -197,7 +202,7 @@ class _SectionTitle extends StatelessWidget {
         fontSize: 13,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.4,
-        color: Color(0xFF55423D),
+        color: AppColors.mutedOnLight,
       ),
     );
   }
@@ -248,7 +253,7 @@ class _PendingOrderCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF55423D).withValues(alpha: 0.8),
+                      color: AppColors.mutedOnLight.withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -256,7 +261,7 @@ class _PendingOrderCard extends StatelessWidget {
                     entry.localId,
                     style: TextStyle(
                       fontSize: 11,
-                      color: const Color(0xFF55423D).withValues(alpha: 0.55),
+                      color: AppColors.mutedOnLight.withValues(alpha: 0.55),
                     ),
                   ),
                 ],
@@ -326,7 +331,7 @@ class _LastOrderCard extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF55423D).withValues(alpha: 0.85),
+                color: AppColors.mutedOnLight.withValues(alpha: 0.85),
               ),
             ),
             if (order.total != null) ...[
@@ -375,7 +380,7 @@ class _LastOrderCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF55423D).withValues(alpha: 0.8),
+                          color: AppColors.mutedOnLight.withValues(alpha: 0.8),
                         ),
                       ),
                     ],

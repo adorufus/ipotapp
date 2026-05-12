@@ -80,122 +80,178 @@ class _MenuTabState extends ConsumerState<MenuTab> {
     super.dispose();
   }
 
+  /// View Cart sits in a [Stack] over the menu so it never fights [Expanded] for
+  /// height (avoids overflows) and stays above the scroll edge.
+  Widget _withViewCartOverlay(
+    BuildContext context, {
+    required int navIndex,
+    required Widget body,
+  }) {
+    if (navIndex != 0) return body;
+
+    final bottomGap = 12.0 + MediaQuery.viewPaddingOf(context).bottom;
+
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(child: body),
+        Positioned(
+          left: 20.w,
+          right: 20.w,
+          bottom: bottomGap,
+          child: AppButton(
+            label: 'View Cart',
+            leading: const Icon(Icons.shopping_basket_outlined),
+            trailing: Consumer(
+              builder: (context, ref, _) {
+                final count = ref.watch(cartItemCountProvider);
+                final totalCents = ref.watch(cartTotalCentsProvider);
+                final total = (totalCents / 100).toStringAsFixed(2);
+                return Text('$count items • \$$total');
+              },
+            ),
+            height: 56,
+            shape: const StadiumBorder(),
+            textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            onPressed: () {
+              ref.read(bottomNavIndexProvider.notifier).state = 1;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final asyncMenu = ref.watch(menuResponseProvider);
     final idx = ref.watch(bottomNavIndexProvider);
 
-    // Only show the "View Cart" floating bar on the Menu tab.
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    final listBottomPadding = 24.0 + bottomInset + 96.0;
+    final viewPad = MediaQuery.viewPaddingOf(context).bottom;
+    const kViewCartSlot = 56.0 + 16.0 + 20.0;
+    final listBottomPadding =
+        24.0 + viewPad + (idx == 0 ? kViewCartSlot : 16.0);
 
     return Padding(
       padding: EdgeInsets.only(top: 30.h),
       child: Column(
         children: [
-          asyncMenu.when(
-            data: (menu) {
-              final categories = [...menu.categories]
-                ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+          Expanded(
+            child: _withViewCartOverlay(
+              context,
+              navIndex: idx,
+              body: asyncMenu.when(
+                data: (menu) {
+                  final categories = [...menu.categories]
+                    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-              final selectedCategoryId =
-                  _selectedCategoryId ??
-                  (categories.isNotEmpty ? categories.first.id : null);
+                  final selectedCategoryId = _selectedCategoryId ??
+                      (categories.isNotEmpty ? categories.first.id : null);
 
-              final items = menu.items.where((it) {
-                final matchesCategory = selectedCategoryId == null
-                    ? true
-                    : it.categoryId == selectedCategoryId;
-                final q = _query.trim().toLowerCase();
-                final matchesQuery = q.isEmpty
-                    ? true
-                    : it.name.toLowerCase().contains(q) ||
-                          it.description.toLowerCase().contains(q);
-                return matchesCategory && matchesQuery;
-              }).toList();
+                  final items = menu.items.where((it) {
+                    final matchesCategory = selectedCategoryId == null
+                        ? true
+                        : it.categoryId == selectedCategoryId;
+                    final q = _query.trim().toLowerCase();
+                    final matchesQuery = q.isEmpty
+                        ? true
+                        : it.name.toLowerCase().contains(q) ||
+                            it.description.toLowerCase().contains(q);
+                    return matchesCategory && matchesQuery;
+                  }).toList();
 
-              return RefreshIndicator(
-                onRefresh: _refreshMenu,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(20, 80, 20, listBottomPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _SearchBar(controller: _searchController),
-                      const SizedBox(height: 20),
-                      _CategoryTabs(
-                        categories: categories,
-                        selectedId: selectedCategoryId,
-                        onSelected: (id) =>
-                            setState(() => _selectedCategoryId = id),
-                      ),
-                      const SizedBox(height: 20),
-                      ...items.map(
-                        (it) => Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: MenuItemCard(
-                            item: it,
-                            onAdd: () => _handleAddToCart(it),
+                  return RefreshIndicator(
+                    onRefresh: _refreshMenu,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding:
+                          EdgeInsets.fromLTRB(20, 80, 20, listBottomPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _SearchBar(controller: _searchController),
+                          const SizedBox(height: 20),
+                          _CategoryTabs(
+                            categories: categories,
+                            selectedId: selectedCategoryId,
+                            onSelected: (id) =>
+                                setState(() => _selectedCategoryId = id),
                           ),
-                        ),
-                      ),
-                      if (items.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 40),
-                          child: Text(
-                            'No items found.',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: const Color(
-                                    0xFF55423D,
-                                  ).withValues(alpha: 0.75),
-                                ),
+                          const SizedBox(height: 20),
+                          ...items.map(
+                            (it) => Padding(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: MenuItemCard(
+                                item: it,
+                                onAdd: () => _handleAddToCart(it),
+                              ),
+                            ),
                           ),
-                        ),
-                    ],
+                          if (items.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 40),
+                              child: Text(
+                                'No items found.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color: AppColors.mutedOnLight.withValues(
+                                        alpha: 0.75,
+                                      ),
+                                    ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                loading: () => const _MenuLoadingBody(),
+                error: (e, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Failed to load menu.\n$e',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.neutral),
+                    ),
                   ),
-                ),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'Failed to load menu.\n$e',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.neutral),
                 ),
               ),
             ),
           ),
-          Expanded(child: Container()),
-          if (idx == 0)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: AppButton(
-                label: 'View Cart',
-                leading: const Icon(Icons.shopping_basket_outlined),
-                trailing: Consumer(
-                  builder: (context, ref, _) {
-                    final count = ref.watch(cartItemCountProvider);
-                    final totalCents = ref.watch(cartTotalCentsProvider);
-                    final total = (totalCents / 100).toStringAsFixed(2);
-                    return Text('$count items • \$$total');
-                  },
-                ),
-                height: 56,
-                shape: const StadiumBorder(),
-                textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                onPressed: () {
-                  ref.read(bottomNavIndexProvider.notifier).state = 1;
-                },
-              ),
-            ),
-          SizedBox(height: 16.h),
         ],
+      ),
+    );
+  }
+}
+
+class _MenuLoadingBody extends StatelessWidget {
+  const _MenuLoadingBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Semantics(
+        label: 'Loading menu',
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppColors.primary),
+            const SizedBox(height: 20),
+            Text(
+              'Loading menu…',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.mutedOnLight,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -208,37 +264,40 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search, color: Color(0xFF89726C)),
-        hintText: 'Search for your favorite flavors...',
-        hintStyle: TextStyle(
-          color: const Color(0xFF55423D).withValues(alpha: 0.50),
-        ),
-        filled: true,
-        fillColor: const Color(0xFFFBF2EE),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.10),
+    return Semantics(
+      label: 'Search menu',
+      hint: 'Search for your favorite flavors',
+      textField: true,
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF89726C)),
+          hintText: 'Search for your favorite flavors...',
+          hintStyle: const TextStyle(color: AppColors.hintOnLight),
+          filled: true,
+          fillColor: const Color(0xFFFBF2EE),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
           ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.10),
+            ),
           ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.40),
-            width: 2,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.10),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.40),
+              width: 2,
+            ),
           ),
         ),
       ),
@@ -268,27 +327,36 @@ class _CategoryTabs extends StatelessWidget {
         itemBuilder: (context, i) {
           final c = categories[i];
           final selected = c.id == selectedId;
-          return InkWell(
-            onTap: () => onSelected(c.id),
-            borderRadius: BorderRadius.circular(999),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: selected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: selected
-                      ? Colors.transparent
-                      : const Color(0xFFDCC1B9),
+          return Semantics(
+            button: true,
+            selected: selected,
+            label: c.name,
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: () => onSelected(c.id),
+              borderRadius: BorderRadius.circular(999),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  c.name,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: selected ? Colors.white : const Color(0xFF55423D),
+                decoration: BoxDecoration(
+                  color: selected ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color:
+                        selected ? Colors.transparent : const Color(0xFFDCC1B9),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    c.name,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color:
+                              selected ? Colors.white : AppColors.mutedOnLight,
+                        ),
                   ),
                 ),
               ),
@@ -407,17 +475,17 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               Text(
                 'Customize',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.neutral,
-                ),
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.neutral,
+                    ),
               ),
               const SizedBox(height: 4),
               Text(
                 item.name,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: const Color(0xFF55423D).withValues(alpha: 0.85),
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: AppColors.mutedOnLight.withValues(alpha: 0.85),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 12),
               Flexible(
@@ -471,9 +539,9 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: const Color(
-                                0xFF55423D,
-                              ).withValues(alpha: 0.75),
+                              color: AppColors.mutedOnLight.withValues(
+                                alpha: 0.75,
+                              ),
                             ),
                           ),
                         ],

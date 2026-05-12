@@ -51,14 +51,14 @@ class QrScanTab extends ConsumerWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Scan the code on your table to browse our menu.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 16,
                                         height: 24 / 16,
                                         fontWeight: FontWeight.w400,
-                                        color: Color(0xFF55423D),
+                                        color: AppColors.mutedOnLight,
                                       ),
                                     ),
                                     const SizedBox(height: 24),
