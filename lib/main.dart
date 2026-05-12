@@ -9,6 +9,15 @@ import 'state/locale_provider.dart';
 import 'utils/color_utils.dart';
 
 void main() {
+  const apiBase = String.fromEnvironment('API_BASE_URL');
+  if (apiBase.trim().isEmpty) {
+    throw StateError(
+      'API_BASE_URL is not set. Add it to config.json (see config.example.json in the '
+      'repo root), then run the app with:\n'
+      '  flutter run --dart-define-from-file=config.json\n'
+      'See README for platform-specific URLs and CI.',
+    );
+  }
   runApp(const AppScope(child: MainApp()));
 }
 

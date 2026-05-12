@@ -1,3 +1,11 @@
+# Local environment (secrets; never commit)
+.env
+.env.*
+!.env.example
+
+# Flutter dart-define-from-file (copy from config.example.json)
+/config.json
+
 # Miscellaneous
 *.class
 *.log
@@ -32,6 +40,9 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+
+# Node.js (e.g. mock-api)
+**/node_modules/
 
 # Symbolication related
 app.*.symbols
