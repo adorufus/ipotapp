@@ -270,4 +270,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scan => '扫描';
+
+  @override
+  String get invalidTableQr => '该二维码不是有效的桌台码。请使用类似 ipot://table/T001 的格式。';
 }

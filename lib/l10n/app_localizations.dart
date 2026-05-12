@@ -535,6 +535,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan'**
   String get scan;
+
+  /// No description provided for @invalidTableQr.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR code is not a valid table code. Use a code like ipot://table/T001.'**
+  String get invalidTableQr;
 }
 
 class _AppLocalizationsDelegate

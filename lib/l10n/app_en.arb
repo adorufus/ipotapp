@@ -197,5 +197,6 @@
   "toggleFlashTooltip": "Toggle flash",
   "pointCameraAtQr": "Point your camera at the QR code.",
   "tapCameraToStart": "Tap the camera to start scanning.",
-  "scan": "Scan"
+  "scan": "Scan",
+  "invalidTableQr": "This QR code is not a valid table code. Use a code like ipot://table/T001."
 }

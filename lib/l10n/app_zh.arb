@@ -72,5 +72,6 @@
   "toggleFlashTooltip": "开关闪光灯",
   "pointCameraAtQr": "将相机对准二维码。",
   "tapCameraToStart": "点击相机开始扫描。",
-  "scan": "扫描"
+  "scan": "扫描",
+  "invalidTableQr": "该二维码不是有效的桌台码。请使用类似 ipot://table/T001 的格式。"
 }

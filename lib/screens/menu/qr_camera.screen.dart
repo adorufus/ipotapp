@@ -38,9 +38,12 @@ class _QrCameraScreenState extends ConsumerState<QrCameraScreen> {
 
     ref.listen<QrScanState>(qrScanControllerProvider, (previous, next) {
       if (next.isError && next.errorMessage != null) {
+        final message = next.errorMessage == kInvalidTableQrSnackKey
+            ? l10n.invalidTableQr
+            : next.errorMessage!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
 
       // Once we have a QR code, close this screen and return it.

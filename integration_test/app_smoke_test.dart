@@ -11,7 +11,12 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('app launches with shell and bottom navigation', (tester) async {
-    await tester.pumpWidget(const AppScope(child: MainApp()));
+    await tester.pumpWidget(
+      const AppScope(
+        apiBaseUrl: 'http://127.0.0.1:9/api/v1',
+        child: MainApp(),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 

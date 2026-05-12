@@ -278,4 +278,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scan => 'Scan';
+
+  @override
+  String get invalidTableQr =>
+      'This QR code is not a valid table code. Use a code like ipot://table/T001.';
 }
