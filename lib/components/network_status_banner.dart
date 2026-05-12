@@ -8,8 +8,14 @@ import 'package:ipotapp/state/core/device_network_status.dart';
 ///
 /// When online, the app can still read [deviceNetworkStatusProvider] elsewhere
 /// (e.g. to tune UI or retry requests).
+///
+/// Set [belowToolbar] when the scaffold body extends behind a transparent app
+/// bar (e.g. menu tab): the banner is inset below the status bar and toolbar so
+/// it is not covered by system UI or the app bar.
 class NetworkStatusBanner extends ConsumerWidget {
-  const NetworkStatusBanner({super.key});
+  const NetworkStatusBanner({super.key, this.belowToolbar = false});
+
+  final bool belowToolbar;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +28,7 @@ class NetworkStatusBanner extends ConsumerWidget {
         }
         final l10n = AppLocalizations.of(context)!;
         final message = l10n.offlineBannerMessage;
-        return Semantics(
+        final bar = Semantics(
           container: true,
           liveRegion: true,
           label: message,
@@ -47,6 +53,20 @@ class NetworkStatusBanner extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+        );
+
+        return SafeArea(
+          bottom: false,
+          left: false,
+          right: false,
+          top: true,
+          minimum: EdgeInsets.zero,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: belowToolbar ? kToolbarHeight : 0,
+            ),
+            child: bar,
           ),
         );
       },

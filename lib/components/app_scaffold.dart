@@ -196,16 +196,18 @@ class AppScaffold extends ConsumerWidget {
         leading: resolvedLeading,
         actions: resolvedActions,
       ),
-      body: SafeArea(
-        top: !extendBodyBehindAppBar,
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const NetworkStatusBanner(),
-            Expanded(child: body),
-          ],
-        ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          NetworkStatusBanner(belowToolbar: extendBodyBehindAppBar),
+          Expanded(
+            child: SafeArea(
+              top: !extendBodyBehindAppBar,
+              bottom: false,
+              child: body,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: showBottomNavigationBar
           ? const AppBottomNavigationBar()

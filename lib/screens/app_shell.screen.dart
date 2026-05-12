@@ -40,35 +40,24 @@ class AppShellScreen extends ConsumerWidget {
       backgroundColor: AppColors.secondary,
       appBar: GlobalGlassAppBar(
         title: title,
-        actions: [
-          const LanguageMenuButton(),
-          IconButton(
-            tooltip: l10n.infoTooltip,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.infoComingSoon)),
-              );
-            },
-            icon: const Icon(Icons.info_outline, color: AppColors.neutral),
-          ),
-        ],
+        actions: [const LanguageMenuButton()],
       ),
-      body: SafeArea(
-        top: idx != 0,
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const NetworkStatusBanner(),
-            Expanded(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          NetworkStatusBanner(belowToolbar: idx == 0),
+          Expanded(
+            child: SafeArea(
+              top: idx != 0,
+              bottom: false,
               child: IndexedStack(
                 index: idx,
                 sizing: StackFit.expand,
                 children: const [MenuOrQrTab(), CartTab(), OrdersTab()],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: const AppBottomNavigationBar(),
     );

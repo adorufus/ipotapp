@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ipotapp/components/app_button.dart';
 import 'package:ipotapp/l10n/app_localizations.dart';
 import 'package:ipotapp/utils/color_utils.dart';
@@ -35,7 +36,7 @@ class QrScanTab extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const SizedBox(height: 8),
+                            SizedBox(height: 50.h),
                             Text(
                               l10n.readyToOrder,
                               textAlign: TextAlign.center,
