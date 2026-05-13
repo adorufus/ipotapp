@@ -6,9 +6,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ipotapp/main.dart';
 import 'package:ipotapp/state/app_scope.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    await Supabase.initialize(
+      url: 'https://test.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+    );
+  });
 
   testWidgets('app launches with shell and bottom navigation', (tester) async {
     await tester.pumpWidget(

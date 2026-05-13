@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'l10n/app_localizations.dart';
 import 'screens/app_shell.screen.dart';
@@ -8,7 +9,9 @@ import 'state/app_scope.dart';
 import 'state/locale_provider.dart';
 import 'utils/color_utils.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   const apiBase = String.fromEnvironment('API_BASE_URL');
   if (apiBase.trim().isEmpty) {
     throw StateError(
@@ -18,6 +21,22 @@ void main() {
       'See README for platform-specific URLs and CI.',
     );
   }
+
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  if (supabaseUrl.trim().isEmpty || supabaseAnonKey.trim().isEmpty) {
+    throw StateError(
+      'SUPABASE_URL and SUPABASE_ANON_KEY are not set. Add them next to API_BASE_URL in '
+      'config.json (see config.example.json), then run with:\n'
+      '  flutter run --dart-define-from-file=config.json',
+    );
+  }
+
+  await Supabase.initialize(
+    url: supabaseUrl.trim(),
+    anonKey: supabaseAnonKey.trim(),
+  );
+
   runApp(const AppScope(child: MainApp()));
 }
 

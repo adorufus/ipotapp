@@ -5,6 +5,7 @@ import 'package:ipotapp/state/core/device_network_status.dart';
 import 'package:ipotapp/state/core/local_store_providers.dart';
 import 'package:ipotapp/state/core/order_repository_provider.dart';
 import 'package:ipotapp/state/orders/order_history_provider.dart';
+import 'package:ipotapp/state/orders/realtime_orders_provider.dart';
 import 'package:ipotapp/utils/network_reachability.dart';
 
 final orderOutboundSyncProvider = Provider<OrderOutboundSync>((ref) {
@@ -42,6 +43,7 @@ class OrderOutboundSync {
       _busy = false;
       if (removedAny) {
         _ref.invalidate(tableOrderHistoryProvider);
+        _ref.invalidate(realtimeOrdersPatchProvider);
       }
     }
   }

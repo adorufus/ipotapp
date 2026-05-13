@@ -18,6 +18,11 @@ class AppShellScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep order Supabase Realtime subscription alive for the whole shell session
+    // (not only when the Orders tab paints). IndexedStack offstage tabs may not
+    // rebuild every frame.
+    ref.watch(realtimeOrdersPatchProvider);
+
     ref.listen(deviceNetworkStatusProvider, (previous, next) {
       next.whenData((status) {
         if (status != DeviceNetworkStatus.offline) {

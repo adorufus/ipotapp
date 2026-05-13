@@ -53,6 +53,7 @@ class OrdersTab extends ConsumerWidget {
     final checkout = ref.watch(checkoutControllerProvider);
     final pendingAsync = ref.watch(pendingOrdersListProvider);
     final historyAsync = ref.watch(tableOrderHistoryProvider);
+    final patch = ref.watch(realtimeOrdersPatchProvider);
     final last = checkout.lastOrder;
     final l10n = AppLocalizations.of(context)!;
 
@@ -69,9 +70,12 @@ class OrdersTab extends ConsumerWidget {
         )
         .toList();
     final hasQueue = pendingDisplayed.isNotEmpty;
-    final historyList = historyAsync.maybeWhen(
-      data: (d) => d,
-      orElse: () => <Order>[],
+    final historyList = mergeOrdersWithRealtimePatch(
+      historyAsync.maybeWhen(
+        data: (d) => d,
+        orElse: () => <Order>[],
+      ),
+      patch,
     );
     final hasHistory = historyList.isNotEmpty;
     final showFullEmpty =
@@ -222,6 +226,7 @@ class OrdersTab extends ConsumerWidget {
   }
 
   static Future<void> _onRefresh(WidgetRef ref) async {
+    ref.read(realtimeOrdersPatchProvider.notifier).clear();
     ref.invalidate(pendingOrdersListProvider);
     ref.invalidate(tableOrderHistoryProvider);
     try {
