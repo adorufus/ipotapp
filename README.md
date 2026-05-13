@@ -2,6 +2,16 @@
 
 ipotapp is a Flutter client for in-restaurant ordering: scan a table QR code, browse the menu, build a cart, and place orders against a JSON HTTP API. The UI uses a tabbed shell (menu, cart, orders), Riverpod for state, and Dio for networking. English and Chinese strings are maintained through Flutter gen-l10n.
 
+## For testers (pre-built APK)
+
+Install the Android build from **GitHub Releases** (no Flutter toolchain required):
+
+- **Direct download (v1.0.0):** [ipot-app.apk](https://github.com/adorufus/ipotapp/releases/download/v1.0.0/ipot-app.apk)
+- **All releases:** [github.com/adorufus/ipotapp/releases](https://github.com/adorufus/ipotapp/releases)
+
+Enable installation from unknown sources if prompted, then open the APK on your device.
+
+
 The API base URL is **not** hard-coded in Dart. It is compiled in only via **`API_BASE_URL`** using `--dart-define-from-file=config.json` (see below). Order status **live updates** use **Supabase Realtime broadcast** on a per-table channel; the app needs **`SUPABASE_URL`** and **`SUPABASE_ANON_KEY`** in the same file. The local **`mock-api`** pushes those broadcasts using **`SUPABASE_SERVICE_ROLE_KEY`** in `mock-api/.env` (server-only; never ship that key in the Flutter app).
 
 **Technical test note.** The assignment description did not specify which API base URL to use. This submission therefore targets a **self-hosted HTTP API** (deployed for reviewers) instead of an unspecified third-party endpoint. To run the app against that server, put the URL below in `config.json` as `API_BASE_URL`. The repo also includes a **`mock-api`** project if you prefer to run the same contract locally against MongoDB.
